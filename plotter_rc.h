@@ -27,11 +27,14 @@ private slots:
 
     void on_stop_btn_clicked();
 
+    void on_checkBox_2_stateChanged(int arg1);
+
 private:
     Ui::Plotter_RC *ui;
     Creader *prt;
     QString data;
     double voltRange = 3.3;
     int addTime = 0;
+    bool tf = false;
 };
 #endif // PLOTTER_RC_H

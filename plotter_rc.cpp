@@ -17,6 +17,21 @@ Plotter_RC::Plotter_RC(QWidget *parent)
         ui->comboBox->addItem(info.portName());
     }
 
+    ui->plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+    ui->plot->legend->setVisible(false);
+    ui->plot->yAxis->setLabel("");
+    ui->plot->xAxis->setLabel("Time, Sec");
+    ui->plot->xAxis->setRange(range_start, range_end + addTime);
+    ui->plot->yAxis->setRange(0, voltRange);
+    ui->plot->clearGraphs();
+
+    ui->plot->addGraph();
+
+
+    ui->plot->graph(0)->setPen(QPen(Qt::blue));
+    ui->plot->graph(0)->setName("Theor");
+
+
 }
 
 Plotter_RC::~Plotter_RC()
@@ -60,21 +75,20 @@ void Plotter_RC::plotting(QString str)
     ui->plot->xAxis->setLabel("Time, Sec");
     ui->plot->xAxis->setRange(range_start, range_end + addTime);
     ui->plot->yAxis->setRange(0, voltRange);
-    ui->plot->clearGraphs();
     ui->plot->addGraph();
 
-    ui->plot->graph()->setPen(QPen(Qt::red));
-    ui->plot->graph()->setName("fft_chA");
-    ui->plot->graph(0)->addData(xAxis, yAxis);
+    ui->plot->graph(1)->setPen(QPen(Qt::red));
+    ui->plot->graph(1)->setName("Pract");
+    ui->plot->graph(1)->addData(xAxis, yAxis);
     ui->plot->replot();
-    ui->plot->graph(0)->rescaleAxes();
+    ui->plot->graph(1)->rescaleAxes();
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
     ui->plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 }
 
 void Plotter_RC::getState()
 {
-    bool tf = ui->checkBox->checkState();
+    tf = ui->checkBox->checkState();
     prt->setVolume(tf);
     if(tf){
         voltRange = 5;
@@ -112,5 +126,57 @@ void Plotter_RC::on_stop_btn_clicked()
 
     prt->stopReading();
     delete prt;
+}
+
+
+void Plotter_RC::on_checkBox_2_stateChanged(int arg1)
+{
+    bool ttf = ui->checkBox->checkState();
+    QString Rst = ui->lineEdit->text();
+    QString Cst = ui->lineEdit_2->text();
+    if(Rst.isEmpty() || Cst.isEmpty())
+    {
+        QMessageBox msgWarning;
+        msgWarning.setText("WARNING!\nВведите значения сопротивления или емкости.");
+        msgWarning.setIcon(QMessageBox::Warning);
+        msgWarning.setWindowTitle("Caution");
+        msgWarning.exec();
+        ui->checkBox_2->setCheckState(Qt::Unchecked);
+        return;
+    }
+    if(arg1 == 2)
+    {
+        double R = Rst.toDouble();
+        double C = Cst.toDouble();
+        double RC = R * C;
+        double limit1 = 0;
+        QVector<double> yA;
+        QVector<double> xA;
+        if(ttf) limit1 = -1 * qLn(0.07) * RC;
+        else limit1 = RC;
+        double i = 0.0;
+        while(i <= limit1)
+        {
+            yA.append(5.0*(1 - qExp(-i/RC)));
+            xA.append(i);
+            i+=0.05;
+        }
+        i = 0.0;
+        double lV = yA[yA.size() - 1];
+        while(i + limit1 <= range_end)
+        {
+            yA.append(lV*qExp(-i/RC));
+            xA.append(i + limit1);
+            i+=0.05;
+        }
+        ui->plot->graph(0)->addData(xA, yA);
+        ui->plot->graph(0)->setVisible(true);
+        ui->plot->replot();
+
+    }else
+    {
+        ui->plot->graph(0)->setVisible(false);
+        ui->plot->replot();
+    }
 }
 
