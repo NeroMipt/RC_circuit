@@ -13,7 +13,7 @@ Creader::Creader(QString prt_name)
     if (!is_open) {
         qDebug() << "Failed to open port: " << prt_name << ", error: " << port->errorString();
     } else {
-        qDebug() << "Connected to port";
+        qDebug() << "Connected to port";     
     }
     connect(port, SIGNAL(readyRead()), this, SLOT(ready_data()));
 }
@@ -29,8 +29,15 @@ void Creader::stopReading()
     port->close();
 }
 
+void Creader::chgRd()
+{
+    ron = !ron;
+}
+
 void Creader::start_reading()
 {
+    ron = true;
+    str.clear();
     char *rdy_msg;
     if(fchrg)
         rdy_msg = "1";
@@ -40,12 +47,15 @@ void Creader::start_reading()
 
 void Creader::ready_data()
 {
-    QByteArray arr;
-    arr = port->readAll();
-    str.append(arr);
-    if(str.size() > 100 && str[str.size() - 1] == ",")
+    if(ron)
     {
-        emit Rdy_Package(str);
-        str.clear();
+        QByteArray arr;
+        arr = port->readAll();
+        str.append(arr);
+        if(str.size() > 100 && str[str.size() - 1] == ",")
+        {
+            emit Rdy_Package(str);
+            str.clear();
+        }
     }
 }

@@ -10,12 +10,14 @@ class Creader : public QObject
     Q_OBJECT
 private:
     bool fchrg = false;
+    bool ron = false;
 public:
     Creader(QString prt_name);
     QSerialPort *port;
     QString str;
     void setVolume(bool tf);
     void stopReading();
+    void chgRd();
 public slots:
     void start_reading();
     void ready_data();
