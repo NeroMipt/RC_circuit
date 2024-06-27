@@ -92,6 +92,7 @@ void Plotter_RC::plotting(QString str)
 
 void Plotter_RC::getState()
 {
+    data.clear();
     tf = ui->checkBox->checkState();
     prt->setVolume(tf);
     if(tf){
