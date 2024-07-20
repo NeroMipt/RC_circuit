@@ -57,5 +57,8 @@ void Creader::ready_data()
             emit Rdy_Package(str);
             str.clear();
         }
+    }else {
+        QByteArray arr;
+        arr = port->readAll();
     }
 }
