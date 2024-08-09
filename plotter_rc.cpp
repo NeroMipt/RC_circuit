@@ -35,6 +35,7 @@ Plotter_RC::Plotter_RC(QWidget *parent)
     ui->plot->graph(0)->setPen(QPen(Qt::blue));
     ui->plot->graph(0)->setName("Theor");
 
+    connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SLOT(changeOffset(int)));
 
 }
 
@@ -105,6 +106,29 @@ void Plotter_RC::getState()
     }
     ui->stop_btn->setEnabled(true);
     ui->start_btn->setEnabled(false);
+}
+
+void Plotter_RC::changeOffset(int offset)
+{
+    QList< QCPGraph * > list;
+    list = ui->plot->selectedGraphs();
+
+    for(int i=0; i < list.size(); i++)
+    {
+        QVector<double> yAxis;
+        QVector<double> xAxis;
+        QCPGraphDataContainer::const_iterator begin = list[i]->data()->begin(); // get range begin iterator from index
+        QCPGraphDataContainer::const_iterator end = list[i]->data()->end(); // get range end iterator from index
+        double os = offset - begin->key;
+        for (QCPGraphDataContainer::const_iterator it=begin; it!=end; ++it)
+        {
+            // iterator "it" will go through all selected data points, as an example, we calculate the value average
+            xAxis.append(it->key + os);
+            yAxis.append(it->value);
+        }
+        list[i]->setData(xAxis, yAxis);
+    }
+    ui->plot->replot();
 }
 
 

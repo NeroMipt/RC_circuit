@@ -23,6 +23,7 @@ private slots:
     void on_pushButton_clicked();
     void plotting(QString str);
     void getState();
+    void changeOffset(int offset);
     void on_open_btn_clicked();
 
     void on_stop_btn_clicked();
